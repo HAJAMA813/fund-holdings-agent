@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fund-holdings-agent"
+version = "0.1.0"
+description = "Deterministic fund top-holdings data pipeline"
+requires-python = ">=3.11"
+dependencies = ["lxml>=5.0", "openpyxl>=3.1", "reportlab>=4.0"]
+
+[project.scripts]
+fund-holdings = "fund_holdings_agent.cli:main"
+fund-manager-funds = "fund_holdings_agent.fund_pool_cli:main"
+fund-industry = "fund_holdings_agent.industry_cli:main"
+fund-resources = "fund_holdings_agent.resource_cli:main"
+fund-compare = "fund_holdings_agent.compare_cli:main"
+fund-history = "fund_holdings_agent.history_cli:main"
+fund-batch = "fund_holdings_agent.batch_cli:main"
+fund-disclosure = "fund_holdings_agent.disclosure_cli:main"
+fund-quarterly = "fund_holdings_agent.quarterly_cli:main"
+fund-portfolio = "fund_holdings_agent.portfolio_cli:main"
+fund-roster-resolve = "fund_holdings_agent.roster_resolve_cli:main"
+fund-personnel-import = "fund_holdings_agent.personnel_import_cli:main"
+fund-resource-backfill = "fund_holdings_agent.resource_backfill_cli:main"
+fund-company-resources = "fund_holdings_agent.company_resource_cli:main"
+fund-candidate-confirmations = "fund_holdings_agent.candidate_confirmation_cli:main"
+fund-phase1-acceptance = "fund_holdings_agent.acceptance_cli:main"
+fund-quarter-rehearsal = "fund_holdings_agent.quarter_rehearsal_cli:main"
+fund-preproduction-replay = "fund_holdings_agent.preproduction_replay_cli:main"
+fund-failure-rehearsal = "fund_holdings_agent.failure_rehearsal_cli:main"
+fund-deployment-healthcheck = "fund_holdings_agent.deployment_healthcheck_cli:main"
+fund-agent = "fund_holdings_agent.mac_cli:main"
+fund-three-quarter = "fund_holdings_agent.three_quarter_cli:main"
+fund-build-mac-package = "fund_holdings_agent.distribution:main"
+fund-agent-ask = "fund_holdings_agent.llm_agent_cli:main"
+fund-agent-agent = "fund_holdings_agent.agent_cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

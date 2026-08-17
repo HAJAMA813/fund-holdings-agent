@@ -1,0 +1,22 @@
+.DS_Store
+.env
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+node_modules
+outputs/*
+!outputs/.gitkeep
+
+# 构建与临时产物
+build/
+dist/
+tmp/
+*.egg-info/
+
+# 内部业务数据（真实机构、人员与覆盖口径，不进入公开仓库）
+data/personnel_internal_20260616.csv
+data/personnel_manual_overrides.csv
+data/resource_candidate_confirmations.csv
+data/internal_business_notes.json
+docs/INTERNAL_NOTES.md
