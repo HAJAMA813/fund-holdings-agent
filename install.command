@@ -7,21 +7,27 @@ cd "$SCRIPT_DIR"
 PYTHON_BIN=${FUND_AGENT_PYTHON:-}
 if [[ -z "$PYTHON_BIN" ]]; then
   for candidate in python3.13 python3.12 python3.11 python3; do
-    if command -v "$candidate" >/dev/null 2>&1; then
-      PYTHON_BIN=$candidate
-      break
+    resolved=$(command -v "$candidate" 2>/dev/null) || continue
+    # 逐个实际执行验证：跳过架构不匹配（如 Apple Silicon 上的 Intel 版 Anaconda）或版本过低的解释器
+    if ! "$resolved" -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)' >/dev/null 2>&1; then
+      echo "跳过不可用的 Python：$resolved（CPU 架构不匹配或版本低于 3.11）"
+      continue
     fi
+    PYTHON_BIN=$resolved
+    break
   done
-fi
 
-if [[ -z "$PYTHON_BIN" ]]; then
-  echo "未找到 Python 3.11 或更高版本，请先安装后重试。"
-  read -r "?按回车退出..."
-  exit 2
+  if [[ -z "$PYTHON_BIN" ]]; then
+    echo "未找到可用的 Python 3.11 或更高版本，请先安装后重试。"
+    echo "提示：Apple Silicon 需要 arm64 版解释器；Intel 版 Python（如部分 Anaconda 安装）缺少 Rosetta 时无法运行。"
+    read -r "?按回车退出..."
+    exit 2
+  fi
 fi
 
 if ! "$PYTHON_BIN" -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)'; then
-  echo "当前 Python 版本低于 3.11，请升级后重试。"
+  echo "指定的 Python 无法运行或版本低于 3.11：$PYTHON_BIN"
+  echo "提示：Apple Silicon 需要 arm64 版解释器；可用 FUND_AGENT_PYTHON 指定其他解释器。"
   read -r "?按回车退出..."
   exit 2
 fi

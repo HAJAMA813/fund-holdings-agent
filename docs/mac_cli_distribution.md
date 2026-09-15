@@ -123,3 +123,33 @@ Mac CLI 跨电脑版本只有在以下条件全部满足时才可正式交付：
 5. 选择基金公司、基金经理、报告期，再选择Excel、PDF或两者都要。
 6. 结果保存在“文稿/FundHoldingsAgent”目录。
 ```
+
+## 8. 常见问题：Bad CPU type in executable
+
+现象：双击 `基金持仓Agent.command` 提示
+`bad interpreter: Bad CPU type in executable`，或 `.venv/bin/python` 无法运行。
+
+原因：`.venv` 是用与本机 CPU 架构不一致的 Python 创建的。典型场景是 Apple Silicon（arm64）机器上，
+PATH 里的 `python3.13` 实际是 Intel（x86_64）版 Anaconda，而系统未安装 Rosetta 2。
+
+排查：
+
+```bash
+uname -m                                        # 本机架构，Apple Silicon 显示 arm64
+file -L .venv/bin/python                        # 应为 arm64；显示 x86_64 即不匹配
+file -L "$(command -v python3)"                 # 检查候选解释器架构
+```
+
+修复：用与本机架构一致的解释器重建虚拟环境（不删除任何业务数据或历史报告）：
+
+```bash
+cd <项目目录>
+rm -rf .venv
+<python3.11-or-newer-arm64 路径> -m venv .venv
+.venv/bin/python -m pip install --upgrade .
+```
+
+`install.command` 会逐个实际执行候选解释器，自动跳过架构不匹配或版本过低的版本；
+也可用 `FUND_AGENT_PYTHON=/path/to/python3.11 ./install.command` 显式指定。
+用户配置、缓存和正式报告都在 `~/Library/Application Support/FundHoldingsAgent/`
+和 `~/Documents/FundHoldingsAgent/`，重建 `.venv` 不会影响它们。
