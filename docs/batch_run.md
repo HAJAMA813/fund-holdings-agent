@@ -262,7 +262,7 @@ PYTHONPATH=src /opt/anaconda3/bin/python -m fund_holdings_agent.deployment_healt
 
 默认离线运行，真实网络探测只有增加 `--check-network` 才执行。`BLOCKED` 的退出码为3，表示存在必须先处理的阻断失败；`READY_WITH_WARNINGS` 的退出码为0，表示可手动运行但非阻断事项尚未闭环。是否已有自动调度单独输出，不会因为存在一个可执行脚本就误报为已部署。
 
-2026-08-15实际检查结果为15项通过、0项阻断失败、4项警告或跳过，全量测试89项通过。手动运行就绪度为 `READY_WITH_WARNINGS`，自动化状态为 `NOT_DEPLOYED`。输出：
+2026-08-15实际检查结果（当日快照）为15项通过、0项阻断失败、4项警告或跳过，当次全量测试89项通过。手动运行就绪度为 `READY_WITH_WARNINGS`，自动化状态为 `NOT_DEPLOYED`。输出：
 
 - `deployment_healthcheck.json`：机器可读结论和逐项证据；
 - `上线健康检查报告.md`：完整中文检查表；

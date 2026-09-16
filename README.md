@@ -104,7 +104,7 @@ PYTHONPATH=src python -m fund_holdings_agent.acceptance_cli \
   --run-tests
 ```
 
-当前2026Q2验收结果为12项全部通过、失败0，自动测试78项通过；结论为“第一阶段可使用，带已披露边界”。
+2026-08-15 第一阶段验收结果为12项全部通过、失败0，当日自动测试78项通过；结论为“第一阶段可使用，带已披露边界”。该数字为验收当日快照；加入大模型问答与多步 Agent 层后，当前全量测试为 **121 项**。
 
 真实新季度开始前，可先运行完全离线的季度切换演练。演练不会请求天天基金／东方财富，也不会调用 DeepSeek；它验证北京时间切换、禁止上一季度回退、披露等待、从持仓阶段续跑，以及名单、人员库和候选确认关系的复用：
 
@@ -332,7 +332,7 @@ PYTHONPATH=src /opt/anaconda3/bin/python -m fund_holdings_agent.deployment_healt
 - `manual_run_readiness`：`READY`、`READY_WITH_WARNINGS` 或 `BLOCKED`，用于判断能否人工启动任务；
 - `automation_deployment_status`：`DEPLOYED` 或 `NOT_DEPLOYED`，只有发现实际 cron、launchd、容器或 CI 调度配置时才视为已部署。
 
-当前实际检查结果为 `READY_WITH_WARNINGS`／`NOT_DEPLOYED`：19项检查中15项通过、0项阻断失败、4项警告或跳过，全量自动测试89项通过。非阻断项包括人员库28条已知警告、部署主机真实网络探测未执行、尚未配置常驻季度调度，以及历史申万行业仍使用当前公开快照。
+健康检查记录（检查当日快照）为 `READY_WITH_WARNINGS`／`NOT_DEPLOYED`：19项检查中15项通过、0项阻断失败、4项警告或跳过，当次全量自动测试89项通过。非阻断项包括人员库28条已知警告、部署主机真实网络探测未执行、尚未配置常驻季度调度，以及历史申万行业仍使用当前公开快照。当前全量测试已增至 **121 项**。
 
 检查产物保存在 `outputs/019fff23-cef4-7d91-8837-7401263c06d4/deployment_healthcheck/`，包括机器可读 JSON、中文健康检查报告和部署待办清单。
 
