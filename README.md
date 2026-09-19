@@ -2,7 +2,7 @@
 
 转交给其他AI Agent或维护人员前，请先阅读 [AI Agent转交注意事项](docs/AI_AGENT_HANDOFF.md)。
 
-本项目把基金季度前十大重仓数据处理拆成确定性的 Python 流程：读取名单、抓取东方财富/天天基金 F10、清洗、报告期经理核验、A/C/E 份额去重、异常分类、导出正式 Excel。当前版本不调用任何大模型或 DeepSeek API。
+本项目把基金季度前十大重仓数据处理拆成确定性的 Python 流程：读取名单、抓取东方财富/天天基金 F10、清洗、报告期经理核验、A/C/E 份额去重、异常分类、导出正式 Excel。核心事实与数值计算 100% 由确定性规则完成；另有一个**可选**的大模型问答与多步 Agent 层，只负责自然语言交互和解释，不参与任何计算（未配置 API Key 时自动降级为确定性摘要）。
 
 ## 快速运行
 
@@ -363,3 +363,60 @@ Mac用户配置、缓存和SQLite默认保存到 `~/Library/Application Support/
 PYTHONPATH=src python -m fund_holdings_agent.distribution --output-dir dist
 PYTHONPATH=src python -m fund_holdings_agent.distribution --output-dir dist --include-internal-data
 ```
+
+## 大模型问答与多步 Agent（可选层）
+
+这一层**不属于确定性管道**，可以完全不启用。未配置 DeepSeek API Key 时，所有功能自动降级为确定性模板摘要；管道模块不 import 本层，由测试保证两者解耦。
+
+### 分层与职责边界
+
+| 层 | 控制流 | 模型职责 |
+|---|---|---|
+| 确定性管道 | 代码预先写死 | 不参与 |
+| 自然语言问答（`fund-agent-ask`） | 代码预先写死：定位产物 → 构建证据包 → 模型回答 | 只做摘要与解释 |
+| 多步 Agent（`fund-agent-agent`） | 运行时由模型生成：观察 → 选工具 → 看结果 → 再决定 | 只做工具编排与解释 |
+
+无论哪一层，模型都**只读**已由管道生成并校验过的 JSON，不写入、不修改持仓事实、行业映射、人员匹配或异常状态。
+
+### 命令
+
+```bash
+# 单轮问答（也可用菜单第 7 项，支持多轮追问）
+.venv/bin/fund-agent-ask --manager 徐小勇 --report-date 2026-06-30 \
+  --question "徐小勇本季度行业暴露靠前的是哪些？"
+
+# 多步 Agent：模型自主决定调用顺序与参数
+.venv/bin/fund-agent-agent \
+  --question "徐小勇和王海涛谁在电子行业的暴露更高？" \
+  --timeout 120
+```
+
+`fund-agent-agent` 暴露 4 个**只读**工具：`list_managers`、`list_quarters`、
+`manager_overview`、`compare_managers`。模型在 ReAct 循环中自主选择工具与参数
+（例如先 `list_quarters` 查到报告期，再把它填进 `manager_overview`），
+上限 6 步，工具执行失败会把错误回灌给模型自行纠正。
+
+### 配置
+
+API Key 只从环境变量或项目根目录 `.env` 读取，不写入代码、不进入版本库：
+
+```bash
+cp .env.example .env      # 填入 DEEPSEEK_API_KEY
+# 或临时使用：export DEEPSEEK_API_KEY=sk-...
+```
+
+可选变量：`DEEPSEEK_MODEL`（默认 `deepseek-chat`）、`DEEPSEEK_BASE_URL`
+（默认 `https://api.deepseek.com`，兼容其他 OpenAI 协议服务）。
+
+### 约束（系统提示中的硬规则）
+
+1. 每个关键结论必须引用证据来源（文件名或字段）；
+2. 证据中没有的信息直接回答「数据中未提供」，不得猜测；
+3. 不得修改持仓事实、行业映射、异常状态或任何计算结果；
+4. 回答是已验证 JSON 的摘要，不是实时行情，不构成投资建议；
+5. 港股/海外股票按原始标记处理，不强行归入申万行业；
+6. 涉及人员时只引用证据中已有的姓名和机构，不得虚构；
+7. 涉及跨产品市值或净值比例合计时，必须标注「算术汇总，不代表统一组合加权仓位」。
+
+Mac 菜单中，跑完三季简报/单季度任务后会自动附加大模型解读（菜单第 1–4 项），
+另有第 7 项「自然语言问答」和第 8 项「自主 Agent（多步工具编排）」。
